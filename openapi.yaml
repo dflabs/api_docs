@@ -1,0 +1,5402 @@
+openapi: 3.0.0
+info:
+  title: IncMan REST API
+  version: '2.0'
+servers:
+  - url: 'https://192.168.101.43/incmansuite_ng/api/v2'
+paths:
+  '/incidents/{id}/attachments':
+    post:
+      tags:
+        - Attachments
+      description: Add an attachment to an incident
+      operationId: add
+      parameters:
+        - name: id
+          in: path
+          description: ...
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/attachmentsForm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/attachmentsInput'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/attachmentsInput'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/attachmentsInput'
+      responses:
+        '101':
+          description: Unknown operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '200':
+          description: Successfully added attachment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/attachments'
+        '400':
+          description: '{id} is not a valid ID | Missing parameter(s) | Failed to open attachment | File doesn''t exist'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Failed to create new attachment on filesystem | Attachment not found | Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  /incidents:
+    get:
+      tags:
+        - Incidents
+      description: 'List incidents matching the query (ex: /incidents?date_from=2018-11-01&sort_by=time&sort_direction=asc)'
+      parameters:
+        - name: show_deleted
+          in: query
+          description: ...
+          required: false
+          schema:
+            type: boolean
+        - name: keyword
+          in: query
+          description: ...
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: ...
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+        - name: assigned_only
+          in: query
+          description: ...
+          required: false
+          schema:
+            type: boolean
+        - name: sort_by
+          in: query
+          description: 'Sort by:<br>''name'' or  ''n'' - By incident name<br>''time'' or  ''t'' - By incident time'
+          required: false
+          schema:
+            type: string
+            enum:
+              - name
+              - 'n'
+              - time
+              - t
+        - name: sort_direction
+          in: query
+          description: 'Sort direction:<br>''asc'' or  ''a'' - ascending<br>''desc'' or  ''desc'' - descending'
+          required: false
+          schema:
+            type: string
+            enum:
+              - asc
+              - a
+              - desc
+              - d
+        - name: 'status[]'
+          in: query
+          description: See Incident > Status values
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/incidentsInput/properties/status'
+        - name: 'type[]'
+          in: query
+          description: 'Incident type: <br/>13514<=>Denial of Service<br/>13538<=>fu-testing<br/>13515<=>Malware<br/>13516<=>Phishing<br/>'
+          schema:
+            type: array
+            items:
+              type: string
+        - name: use_all_types
+          in: query
+          description: |-
+            This parameter will only be considered if there is at leas one value for type[]
+            * 'true' -  is the default and means search incidents that matches exactly all the type query values
+            * 'false' -  means match at least one of the passed query values
+                
+          required: false
+          schema:
+            type: boolean
+            default: 'true'
+        - name: date
+          in: query
+          description: ...
+          required: false
+          schema:
+            type: string
+            enum:
+              - closingtime
+              - detecttime
+              - endtime
+              - openingtime
+              - reporttime
+              - starttime
+        - name: date_from
+          in: query
+          description: ...
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          description: ...
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      description: Incident id
+                      type: integer
+                    name:
+                      description: incident Name
+                      type: string
+                  type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+    post:
+      tags:
+        - Incidents
+      description: Create a new incident
+      operationId: add
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/incidentsInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/incidentsInput'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/incidentsInput'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/incidentsInput'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/incidents'
+        '400':
+          description: Missing parameter(s) | Field is required | Label not found | Folder not found | Template not found | incident_artifact must be an array | incident_artifact must be an array of arrays | The field in artifact is not valid | The field in artifact value have to be valid | The incident property does not have valid value
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred | Failed to create incident from API
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/incidents/{id}':
+    get:
+      tags:
+        - Incidents
+      description: Get incident details
+      operationId: details
+      parameters:
+        - name: id
+          in: path
+          description: incident id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/incidents'
+        '400':
+          description: '{id} is not a valid ID'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Failed to get incident details from API | Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/incidents'
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+    put:
+      tags:
+        - Incidents
+      description: Update incident details
+      operationId: edit
+      parameters:
+        - name: id
+          in: path
+          description: incident id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/incidentsInput'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/incidentsInput'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/incidentsInput'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/incidents'
+        '400':
+          description: '{id} is not a valid ID | Missing parameter(s) | Field is required | Label not found | Folder not found | incident_artifact must be an array | incident_artifact must be an array of arrays | The field in artifact %s is not valid | The field in artifact value have to be valid | The incident property is not allowed in incident editing | Failed to edit incident from API'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred | Failed to edit incident from API | An error occurred while editing incident through API
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/incidents/{id}/close':
+    get:
+      tags:
+        - Incidents
+      description: Returns information about the incident closure
+      operationId: closureInformation
+      parameters:
+        - name: id
+          in: path
+          description: incident id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  fields:
+                    description: Fields for review
+                    type: array
+                    items:
+                      properties:
+                        field:
+                          description: Field
+                          properties:
+                            name:
+                              description: Field name
+                              type: string
+                            value:
+                              description: Field value
+                              type: string
+                          type: object
+                      type: object
+                  qradar_offense:
+                    description: QRadar offence ID
+                    type: integer
+                  jira_ticket:
+                    description: Jira ticket ID
+                    type: string
+                  remedy_ticket:
+                    description: Remedy ticket ID
+                    type: string
+                  tasks:
+                    description: Open tasks
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/tasks'
+                type: object
+        '400':
+          description: '{id} is not a valid ID | Incident can''t be closed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/incidents'
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+    put:
+      tags:
+        - Incidents
+      description: Close an incident
+      operationId: close
+      parameters:
+        - name: id
+          in: path
+          description: incident id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              properties:
+                close_qradar_offense:
+                  description: ...
+                  type: boolean
+                close_jira_ticket:
+                  description: ...
+                  type: boolean
+                close_remedy_ticket:
+                  description: ...
+                  type: boolean
+                final_note:
+                  description: ...
+                  type: string
+                jira_status:
+                  description: ...
+                  type: string
+                qradar_closing_reason:
+                  description: ...
+                  type: string
+              type: object
+          application/json:
+            schema:
+              properties:
+                close_qradar_offense:
+                  description: ...
+                  type: boolean
+                close_jira_ticket:
+                  description: ...
+                  type: boolean
+                close_remedy_ticket:
+                  description: ...
+                  type: boolean
+                final_note:
+                  description: ...
+                  type: string
+                jira_status:
+                  description: ...
+                  type: string
+                qradar_closing_reason:
+                  description: ...
+                  type: string
+              type: object
+          application/xml:
+            schema:
+              properties:
+                close_qradar_offense:
+                  description: ...
+                  type: boolean
+                close_jira_ticket:
+                  description: ...
+                  type: boolean
+                close_remedy_ticket:
+                  description: ...
+                  type: boolean
+                final_note:
+                  description: ...
+                  type: string
+                jira_status:
+                  description: ...
+                  type: string
+                qradar_closing_reason:
+                  description: ...
+                  type: string
+              type: object
+              xml:
+                name: incident
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/incidents'
+        '400':
+          description: '{id} is not a valid ID | Failed to close incident from API'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/incidents/{id}/move':
+    put:
+      tags:
+        - Incidents
+      description: Move an incident to a new folder
+      operationId: move
+      parameters:
+        - name: id
+          in: path
+          description: incident id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              properties:
+                folder:
+                  $ref: '#/components/schemas/incidentsInput/properties/folder'
+              type: object
+          application/json:
+            schema:
+              properties:
+                folder:
+                  $ref: '#/components/schemas/incidentsInput/properties/folder'
+              type: object
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/incidentsInput/properties/folder'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/incidents'
+        '400':
+          description: '{id} is not a valid ID | Missing parameter(s)'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Failed to move incident to folder through API | Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred | An error occurred while moving incident to folder through API
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  /kpi:
+    get:
+      tags:
+        - KPI
+      description: Generate a KPI report
+      operationId: report
+      parameters:
+        - name: output_set
+          in: query
+          description: |2
+             Output set (ID or Name). Optionally you can use parameter o 
+             Output set ID-Name map:
+
+             5c0fb9057826ef3a7e3bb4f2 <=> ei
+          required: true
+          schema:
+            $ref: '#/components/schemas/kpiInput/properties/output_set'
+        - name: type
+          in: query
+          description: Report type (format). Optionally you can use parameter t
+          required: true
+          schema:
+            $ref: '#/components/schemas/kpiInput/properties/type'
+      responses:
+        '200':
+          description: 'Successfully generated KPI report of the requested format: application/json if type = json, text/csv if type = csv'
+          content:
+            application/json: {}
+            text/csv: {}
+        '400':
+          description: 'Missing parameter(s) | Wrong report type, please choose between csv and json'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Failed to get KPI report from API | Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred | An error occurred while generating KPI report from API
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/incidents/{id}/notes':
+    get:
+      tags:
+        - Notes
+      description: List all notes associated with an incident
+      parameters:
+        - name: id
+          in: path
+          description: Incident ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      description: Note ID
+                      type: integer
+                    title:
+                      description: Note title
+                      type: string
+                  type: object
+        '400':
+          description: '{id} is not a valid ID | Missing parameter(s) | Field is required'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred | Failed to create note from API
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+    post:
+      tags:
+        - Notes
+      description: Add a note to an incident
+      operationId: add
+      parameters:
+        - name: id
+          in: path
+          description: ...
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/notesInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/notesInput'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/notesInput'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/notesInput'
+      responses:
+        '200':
+          description: Successfully added note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/notes'
+        '400':
+          description: '{id} is not a valid ID | Missing parameter(s) | Field is required '
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/incidents/{id}/notes/{noteId}':
+    get:
+      tags:
+        - Notes
+      description: Return the details of a note
+      operationId: details
+      parameters:
+        - name: id
+          in: path
+          description: Incident ID
+          required: true
+          schema:
+            type: integer
+        - name: noteId
+          in: path
+          description: Note ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/notes'
+        '400':
+          description: '{id} is not a valid ID'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Failed to get note details from API | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/incidents/{id}/observables':
+    post:
+      tags:
+        - Observables
+      description: Add an observable to an incident
+      operationId: add
+      parameters:
+        - name: id
+          in: path
+          description: Incident ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/observablesInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/observablesInput'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/observablesInput'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/observablesInput'
+      responses:
+        '200':
+          description: Successfully added observable/s
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/observables'
+        '400':
+          description: '{id} is not a valid ID | Missing parameter(s) | Field is required | Field is not a valid observable type | Field has to be valid | Value already exists | Unable to retrieve observables class'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred | Failed to create observable from API
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/observables/{type}':
+    get:
+      tags:
+        - Observables
+      description: List all observables of a given type
+      parameters:
+        - name: type
+          in: path
+          description: Observable type
+          required: true
+          schema:
+            type: string
+            enum:
+              - file
+              - ipaddress
+              - url
+              - email
+              - userdetail
+              - domain
+        - name: keyword
+          in: query
+          description: Optionally you can use parameter k
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of all the observables of the given type
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/observablesList'
+        '400':
+          description: Observable result not found | Observable is required | Param is not a valid observable type | Unable to retrieve observables class
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/incidents/{id}/observables/{type}':
+    get:
+      tags:
+        - Observables
+      description: List all observables of a given type for an incident
+      parameters:
+        - name: id
+          in: path
+          description: Incident ID
+          required: true
+          schema:
+            type: integer
+        - name: type
+          in: path
+          description: Observable type
+          required: true
+          schema:
+            type: string
+            enum:
+              - file
+              - ipaddress
+              - url
+              - email
+              - userdetail
+              - domain
+        - name: keyword
+          in: query
+          description: Optionally you can use parameter k
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of all the observables of the given type for the given incident
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/observablesList'
+        '400':
+          description: '{id} is not a valid ID | Observable result not found | Observable is required | Param is not a valid observable type | Unable to retrieve observables class'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/observables/{observableId}':
+    get:
+      tags:
+        - Observables
+      description: Retrieve the details of a given observables
+      parameters:
+        - name: observableId
+          in: path
+          description: Observable id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Details of the observable
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/observables'
+        '400':
+          description: Observable not found | Observable is required | Param is not a valid observable type | Unable to retrieve observables class
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/incidents/{id}/observables/{observableId}':
+    get:
+      tags:
+        - Observables
+      description: Retrieve the details of a given observables inside of an incident
+      operationId: details
+      parameters:
+        - name: id
+          in: path
+          description: Incident ID
+          required: true
+          schema:
+            type: integer
+        - name: observableId
+          in: path
+          description: Observable ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Details of the observable inside the incident
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/observables'
+        '400':
+          description: '{id} is not a valid ID | Observable not found | Observable is required | Param is not a valid observable type | Unable to retrieve observables class'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/incidents/{id}/observables/{observableId}/actions/{actionId}':
+    get:
+      tags:
+        - Observables
+      description: Get the result of an action over a specific observable inside an incident
+      operationId: actionresult
+      parameters:
+        - name: id
+          in: path
+          description: Incident ID
+          required: true
+          schema:
+            type: integer
+        - name: observableId
+          in: path
+          description: Observable ID
+          required: true
+          schema:
+            type: string
+        - name: actionId
+          in: path
+          description: Action ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  Id:
+                    description: Observable Id
+                    type: string
+                  Action:
+                    description: Action name
+                    type: string
+                  Status:
+                    description: Action status
+                    type: string
+                  Parameters:
+                    description: Action parameters
+                    type: object
+                  Created On:
+                    description: Action date of creation
+                    type: string
+                  Created by:
+                    description: Action creator
+                    type: string
+                  Result:
+                    description: Action results
+                    oneOf:
+                      - type: string
+                      - type: integer
+                  Resource:
+                    description: Integration resource name
+                    type: string
+                type: object
+        '400':
+          description: '{id} is not a valid ID | Observable result not found | Observable is required | Param is not a valid observable type | Unable to retrieve observables class | The result ID specified is not related to the specified observable ID'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  /search:
+    get:
+      tags:
+        - Search
+      description: Search globally or in a specified IncMan section
+      parameters:
+        - name: keyword
+          in: query
+          description: Optionally you can use parameter k
+          required: true
+          schema:
+            type: string
+        - name: 'in[]'
+          in: query
+          description: |-
+            Searchable sections are limited to current user permissions. Optionally you can use
+                 *              parameter i[]
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - Incident details
+                - Hosts
+                - Evidences
+                - Clones
+                - Notes
+                - Tasks
+                - Assessments
+                - Impact
+                - Time impact
+                - Monetary impact
+                - Methods
+                - Expectation
+                - Attachments
+                - Chain of custody
+                - Timeline
+                - Bookmarks
+                - Attachments content
+      responses:
+        '200':
+          description: Search completed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    title:
+                      description: Event/item title
+                      type: string
+                    section:
+                      description: IncMan section
+                      type: string
+                    incident:
+                      description: Incident name
+                      type: string
+                    url:
+                      description: Link to the event/item
+                      type: string
+                  type: object
+        '400':
+          description: 'No keyword to search: you must be specify a string'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/incidents/{id}/search':
+    get:
+      tags:
+        - Search
+      description: Search inside an incident or in a specified incident section
+      parameters:
+        - name: id
+          in: path
+          description: ...
+          required: true
+          schema:
+            type: integer
+        - name: keyword
+          in: query
+          description: Optionally you can use parameter k
+          required: true
+          schema:
+            type: string
+        - name: 'in[]'
+          in: query
+          description: |-
+            Searchable sections are limited to current user permissions. Optionally you can use
+                 * parameter i[]
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - Incident details
+                - Hosts
+                - Evidences
+                - Clones
+                - Notes
+                - Tasks
+                - Assessments
+                - Impact
+                - Time impact
+                - Monetary impact
+                - Methods
+                - Expectation
+                - Attachments
+                - Chain of custody
+                - Timeline
+                - Bookmarks
+                - Attachments content
+      responses:
+        '200':
+          description: Search completed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    title:
+                      description: Event/item title
+                      type: string
+                    section:
+                      description: IncMan section
+                      type: string
+                    incident:
+                      description: Incident name
+                      type: string
+                    url:
+                      description: Link to the event/item
+                      type: string
+                  type: object
+        '400':
+          description: '{id} is not a valid ID | No keyword to search: you must be specify a string'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/incidents/{id}/tasks':
+    get:
+      tags:
+        - Tasks
+      description: Return all tasks for an incident
+      parameters:
+        - name: id
+          in: path
+          description: Incident id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      description: Task id
+                      type: integer
+                    title:
+                      description: Task title
+                      type: string
+                    status:
+                      description: Task status
+                      type: string
+                    authorization:
+                      description: Authorization status
+                      type: string
+                  type: object
+        '400':
+          description: '{id} is not a valid ID'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+    post:
+      tags:
+        - Tasks
+      description: Add a new task to an incident
+      operationId: add
+      parameters:
+        - name: id
+          in: path
+          description: Incident id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/tasksInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/tasksInput'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tasksInput'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/tasksInput'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tasks'
+        '400':
+          description: '{id} is not a valid ID | Missing parameter(s) | Field is required | The task property does not have valid value'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred | Failed to create task from API
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/tasks/{taskId}':
+    get:
+      tags:
+        - Tasks
+      description: Get task details
+      operationId: details
+      parameters:
+        - name: taskId
+          in: path
+          description: Task id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tasks'
+        '400':
+          description: '{id} is not a valid ID'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found | Failed to get task details from API
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+    put:
+      tags:
+        - Tasks
+      description: Update a task
+      operationId: edit
+      parameters:
+        - name: taskId
+          in: path
+          description: Task id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/tasksInput'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tasksInput'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/tasksInput'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tasks'
+        '400':
+          description: '{id} is not a valid ID | Missing parameter(s) | Field is required | The task property does not have valid value'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/tasks/{taskId}/close':
+    put:
+      tags:
+        - Tasks
+      description: Close a task
+      operationId: close
+      parameters:
+        - name: taskId
+          in: path
+          description: Task id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tasks'
+        '400':
+          description: '{id} is not a valid ID | Task already closed'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/incidents/{id}/timeline':
+    get:
+      tags:
+        - Timeline
+      description: Return the timeline for the incident
+      operationId: details
+      parameters:
+        - name: id
+          in: path
+          description: Incident id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/timeline'
+        '400':
+          description: '{id} is not a valid ID | Missing parameter(s) | Field is required'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found | Failed to get timeline of incident from API
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  /events:
+    post:
+      tags:
+        - Triage
+      description: Create a triage event
+      operationId: add
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/eventsInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/eventsInput'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/eventsInput'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/eventsInput'
+      responses:
+        '200':
+          description: Successful created a triage event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/events'
+        '400':
+          description: Missing parameter(s) | Field is required | Field has not a valid value
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred | Failed to create Triage event from API
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/events/{id}/grab':
+    put:
+      tags:
+        - Triage
+      description: Grab a triage event
+      operationId: grab
+      parameters:
+        - name: id
+          in: path
+          description: ...
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful grabbed a triage event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/events'
+        '400':
+          description: '{id} is not a valid ID'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred | Failed to grab Triage event from API
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/events/{id}/discard':
+    put:
+      tags:
+        - Triage
+      description: Discard a triage event
+      operationId: discard
+      parameters:
+        - name: id
+          in: path
+          description: ...
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful discarded a triage event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/events'
+        '400':
+          description: '{id} is not a valid ID'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred | Failed to discard Triage event from API
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  '/events/{id}/convert':
+    put:
+      tags:
+        - Triage
+      description: Create an incident from a triage event
+      operationId: convert
+      parameters:
+        - name: id
+          in: path
+          description: ...
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              properties:
+                template:
+                  description: ...
+                  $ref: '#/components/schemas/template/properties/template'
+                owner:
+                  $ref: '#/components/schemas/userInput/properties/user'
+                incidentid:
+                  description: ...
+                  type: string
+                label:
+                  description: ...
+                  $ref: '#/components/schemas/label/properties/label'
+              type: object
+          application/json:
+            schema:
+              properties:
+                template:
+                  description: ...
+                  oneOf:
+                    - type: string
+                    - type: integer
+                owner:
+                  $ref: '#/components/schemas/userInput/properties/user'
+                incidentid:
+                  description: ...
+                  type: string
+                label:
+                  description: ...
+                  oneOf:
+                    - type: string
+                    - type: integer
+              type: object
+          application/xml:
+            schema:
+              properties:
+                template:
+                  description: ...
+                  oneOf:
+                    - type: string
+                    - type: integer
+                owner:
+                  $ref: '#/components/schemas/userInput/properties/user'
+                incidentid:
+                  description: ...
+                  type: string
+                label:
+                  description: ...
+                  oneOf:
+                    - type: string
+                    - type: integer
+              type: object
+              xml:
+                name: triage
+      responses:
+        '200':
+          description: Successful created incident from triage event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/events'
+        '400':
+          description: '{id} is not a valid ID | Template not found | The incident property does not have valid value | Missing parameter(s)'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '401':
+          description: API authentication failed
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+        '500':
+          description: An error occurred | Failed to convert Triage event from API
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+                type: object
+  /auth:
+    get:
+      tags:
+        - Authorization
+      security:
+        - basicAuth: []
+      description: Return the JWT authorization token
+      operationId: auth
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  jwt:
+                    description: JWT authorization token
+                    type: string
+        '401':
+          description: API authentication failed | API login failed | Unauthorized
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+        '403':
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+        '404':
+          description: Unknown operation | Resource not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+        '405':
+          description: Method not found
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+        '500':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    description: ''
+                    type: string
+                  description:
+                    description: ''
+                    type: string
+components:
+  schemas:
+    user:
+      properties:
+        user:
+          type: string
+          description: ''
+    incidents:
+      required:
+        - incident_kind
+        - status
+        - incidentid
+        - starttime
+        - openingtime
+        - incident_category
+        - type
+        - restriction
+        - timezone
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ...
+        warnings:
+          type: array
+          items:
+            type: string
+          description: Errors that might have occurred during or after the writing of the incident's data into the database
+        investigators:
+          type: array
+          items:
+            type: object
+            properties:
+              user:
+                $ref: '#/components/schemas/user/properties/user'
+              role:
+                type: string
+        folder:
+          type: string
+        observables_auto_lock:
+          type: object
+          properties:
+            name:
+              type: string
+            value:
+              type: string
+              items:
+                type: string
+        owner:
+          $ref: '#/components/schemas/user/properties/user'
+        incident_artifacts:
+          $ref: '#/components/schemas/artifacts/properties/incident_artifacts'
+        incident_kind:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Kind
+            value:
+              type: string
+              default: Forensic - Incident response
+          description: ''
+        status:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Status
+            value:
+              type: string
+              default: Open
+          description: ''
+        incidentid:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Incident ID / Forensic no.
+            value:
+              type: string
+          description: <br>
+        closingtime:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Closing time
+            value:
+              type: string
+          description: ''
+        starttime:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Start time
+            value:
+              type: string
+          description: <br />
+        endtime:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - End time
+            value:
+              type: string
+          description: <br>
+        openingtime:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Opening time
+            value:
+              type: string
+          description: <br>
+        inhibit_phases:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Inhibit phases management
+            value:
+              oneOf:
+                - type: integer
+                  enum:
+                    - 0
+                    - 1
+                - type: boolean
+          description: <br>
+        incident_category:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Category
+            value:
+              type: string
+              default: General
+          description: ''
+        type:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Type
+            value:
+              type: string
+          description: ''
+        restriction:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Restriction - Severity
+            value:
+              type: string
+              default: Unclassified
+          description: <br>
+        description:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Short description
+            value:
+              type: string
+          description: ''
+        tags:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Tags
+            value:
+              type: string
+          description: ''
+        timezone:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Timezone
+            value:
+              type: string
+              default: 'GMT +1.00 Central European Time, West Africa Time'
+          description: ''
+      $ref: '#/components/schemas/incidents'
+    attachments:
+      required:
+        - datetime
+        - application
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ...
+        attachment:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Attachment
+            type:
+              type: string
+              format: byte
+        additional_info:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Additional info
+            type:
+              type: string
+        Incident:
+          $ref: '#/components/schemas/incidentId'
+        file_name:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                enum:
+                  - Filename
+              type:
+                type: string
+          description: ...
+          writeOnly: true
+        datetime:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Date
+            value:
+              type: string
+          description: ''
+        folder:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Folder
+            value:
+              type: string
+          description: ''
+        application:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Application
+            value:
+              type: string
+          description: ''
+        description:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Short description
+            value:
+              type: string
+          description: ''
+      $ref: '#/components/schemas/attachments'
+    notes:
+      required:
+        - title
+        - created_on
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ...
+        Incident:
+          $ref: '#/components/schemas/incidentId'
+        title:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Title
+            value:
+              type: string
+          description: ''
+        tag:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Tag
+            value:
+              type: string
+          description: ''
+        created_on:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Date of creation
+            value:
+              type: string
+          description: ''
+      $ref: '#/components/schemas/notes'
+    observables:
+      properties:
+        id:
+          description: Observable ID
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                enum:
+                  - Observable ID
+              value:
+                type: array
+                items:
+                  type: string
+        type:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                enum:
+                  - Type
+              value:
+                type: string
+          description: Observable type
+        value:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                enum:
+                  - Value
+              value:
+                type: array
+                items:
+                  type: string
+          description: Observable value
+        additional_info:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                enum:
+                  - Additional info
+              value:
+                type: array
+                items:
+                  type: string
+          description: Additional info
+        incident_references:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                enum:
+                  - Incident id
+              name:
+                type: string
+                enum:
+                  - Incident name
+      $ref: '#/components/schemas/observables'
+    observablesList:
+      properties:
+        id:
+          description: Observable ID
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                enum:
+                  - Observable ID
+              value:
+                type: array
+                items:
+                  type: string
+        value:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                enum:
+                  - Value
+              value:
+                type: array
+                items:
+                  type: string
+          description: Observable value
+      $ref: '#/components/schemas/observablesList'
+    tasks:
+      required:
+        - title
+        - status
+        - priority
+        - start_time
+        - end_time
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ...
+        Incident:
+          $ref: '#/components/schemas/incidentId'
+        authorizer:
+          $ref: '#/components/schemas/user/properties/user'
+        authorization:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Authorization
+            value:
+              type: string
+        assigned_by:
+          $ref: '#/components/schemas/user/properties/user'
+        reminders:
+          type: object
+          properties:
+            send_reminder_on_reminder_time:
+              type: string
+              description: Send a reminder to the assigned user on the Reminder date
+            send_reminder_on_end_time:
+              type: string
+              description: Send a reminder to the assigned user on the End date
+            send_reminder_on_report_time:
+              type: string
+              description: Send a reminder to the assigned user on the Report date
+        title:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Title
+            value:
+              type: string
+          description: ''
+        assigned_to:
+          $ref: '#/components/schemas/user/properties/user'
+        hours:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Actual effort
+            value:
+              type: string
+          description: ''
+        percentage:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Progress
+            value:
+              type: integer
+              maximum: 100
+          description: ''
+        closing_time:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Closing time
+            value:
+              type: string
+          description: ''
+        status:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Status
+            value:
+              type: string
+              default: Opened
+          description: ''
+        priority:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Priority
+            value:
+              type: string
+              default: Normal
+          description: ''
+        start_time:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Start time
+            value:
+              type: string
+          description: ''
+        end_time:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - End time
+            value:
+              type: string
+          description: ''
+        report_time:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Report time
+            value:
+              type: string
+          description: ''
+        reminder_time:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Reminder time
+            value:
+              type: string
+          description: ''
+      $ref: '#/components/schemas/tasks'
+    timeline:
+      required:
+        - title
+        - starttime
+        - category
+        - timezone
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ...
+        title:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Title
+            value:
+              type: string
+          description: ''
+        starttime:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Start date
+            value:
+              type: string
+          description: ''
+        endtime:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - End date
+            value:
+              type: string
+          description: ''
+        category:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Category
+            value:
+              type: string
+          description: ''
+        timezone:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Timezone
+            value:
+              type: string
+              enum:
+                - Pacific/Kwajalein
+                - Pacific/Samoa
+                - Pacific/Honolulu
+                - America/Anchorage
+                - America/Los_Angeles
+                - America/Denver
+                - America/Chicago
+                - America/New_York
+                - America/Halifax
+                - America/St_Johns
+                - America/Sao_Paulo
+                - America/Montevideo
+                - Atlantic/South_Georgia
+                - Atlantic/Azores
+                - Atlantic/Cape_Verde
+                - Europe/London
+                - Europe/Paris
+                - Europe/Helsinki
+                - Europe/Moscow
+                - Asia/Tehran
+                - Asia/Dubai
+                - Asia/Kabul
+                - Asia/Karachi
+                - Asia/Kolkata
+                - Asia/Dacca
+                - Asia/Krasnoyarsk
+                - Asia/Manila
+                - Asia/Chongqing
+                - Asia/Singapore
+                - Asia/Tokyo
+                - Australia/Adelaide
+                - Australia/Melbourne
+                - Pacific/Noumea
+                - Pacific/Guadalcanal
+                - Pacific/Auckland
+                - Pacific/Fiji
+                - 'GMT -12.00 Enewetak Atoll, Kwajalein Atoll, Marshall Islands'
+                - 'GMT -11.00 Midway Atoll, Samoa Time Zone'
+                - 'GMT -10.00 Hawaii-Aleutian Standard Time, Cook Islands (NZ)'
+                - 'GMT -9.00 French Polynesia, Hawaii-Aleutian Daylight Time'
+                - 'GMT -8.00 Pacific Standard Time, Alaska Daylight Time'
+                - 'GMT -7.00 Mountain Standard Time, Pacific Daylight Time'
+                - 'GMT -6.00 Central Standard Time, East Pacific'
+                - GMT -6.00 Mountain Daylight Time
+                - 'GMT -5.00 Central daylight time, Eastern standard time'
+                - 'GMT -4.00 Eastern Caribbean Time Zone, Atlantic Standard Time'
+                - GMT -4.00 Eastern Daylight Time
+                - GMT -3.30 Newfoundland Standard Time
+                - 'GMT -3.00 Brazil, Atlantic Daylight Time'
+                - GMT -3.00 Uruguay
+                - GMT -2.00 South Georgia Time
+                - GMT -1.00 Azores
+                - GMT -1.00 Cape Verde
+                - 'GMT +0.00 Coordinated Universal Time, Greenwich Mean Time'
+                - 'GMT +1.00 Central European Time, West Africa Time'
+                - 'GMT +2.00 Central Africa Time, Eastern European Time'
+                - GMT +3.00 Eastern Europe Forward Time
+                - 'GMT +3.00 Arabia Standard Time, East Africa Time'
+                - GMT +3.30 Iran Standard Time
+                - 'GMT +4.00 Azerbaijan, European Russia, United Arab Emirates'
+                - GMT +4.30 Afghanistan
+                - 'GMT +5.00 Central Asia, Indian Ocean'
+                - GMT +5.30 Indian Standard Time
+                - 'GMT +6.00 Bangladesh Standard Time, Bhutan Time'
+                - GMT +7.00 Indochina Time
+                - GMT +8.00 Philippines Standard Time
+                - 'GMT +8.00 China Standard Time, Hong Kong Standard Time, Taiwan Standard Time'
+                - GMT +8.00 Singapore
+                - 'GMT +9.00 Japan Standard Time, Korea Standard Time'
+                - GMT +9.30 Australian Central Standard Time
+                - 'GMT +10.00 Eastern Standard Time, Chamorro Standard Time (US)'
+                - 'GMT +11.00 Federated States of Micronesia, New Caledonia'
+                - GMT +11.00 Solomon Islands
+                - GMT +12.00 New Zealand
+                - GMT +12.00 Fiji
+          description: ''
+      $ref: '#/components/schemas/timeline'
+    artifacts:
+      properties:
+        incident_artifacts:
+          type: object
+          properties:
+            name:
+              type: string
+            value:
+              type: array
+              items:
+                type: object
+                properties:
+                  Artifact name:
+                    type: object
+                    properties:
+                      cef:
+                        type: string
+    events:
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ...
+          items:
+            properties:
+              type:
+                type: string
+        Incident:
+          $ref: '#/components/schemas/incidentId'
+        status:
+          type: object
+          properties:
+            name:
+              type: string
+              enum:
+                - Status
+            value:
+              type: string
+          description: ''
+          readOnly: true
+        type:
+          $ref: '#/components/schemas/incidents/properties/type'
+      $ref: '#/components/schemas/events'
+    userInput:
+      properties:
+        user:
+          type: string
+          enum:
+            - Alessandro Corona
+            - Andrea Fumagalli
+            - Antonio D'Amato
+            - Boris Gurzhovski
+            - Cristiano Scorsetti
+            - Edin Buche
+            - Elenka Ilioska
+            - Farman Ullah
+            - Federico Mauri
+            - Francesca Borra
+            - Hristijan Tintar
+            - IncMan Administrator
+            - Luca Zanetti
+            - Marco Bacaloni
+            - Marco Mazzocchi
+            - Marco Rossi
+            - Michele Zambelli
+            - Paolo Baroni
+            - Riccardo Nazzani
+            - Silvia Uberti
+            - Simone Stabile
+            - Sofija Loleska
+            - Stefano Bonazza
+          description: |+
+            User ID-Name map:
+
+             91 <=> Alessandro Corona
+
+            93 <=> Andrea Fumagalli
+
+            92 <=> Antonio D'Amato
+
+            94 <=> Boris Gurzhovski
+
+            95 <=> Cristiano Scorsetti
+
+            96 <=> Edin Buche
+
+            97 <=> Elenka Ilioska
+
+            100 <=> Farman Ullah
+
+            99 <=> Federico Mauri
+
+            98 <=> Francesca Borra
+
+            101 <=> Hristijan Tintar
+
+            1 <=> IncMan Administrator
+
+            102 <=> Luca Zanetti
+
+            103 <=> Marco Bacaloni
+
+            104 <=> Marco Mazzocchi
+
+            105 <=> Marco Rossi
+
+            106 <=> Michele Zambelli
+
+            107 <=> Paolo Baroni
+
+            108 <=> Riccardo Nazzani
+
+            112 <=> Silvia Uberti
+
+            111 <=> Simone Stabile
+
+            110 <=> Sofija Loleska
+
+            109 <=> Stefano Bonazza
+
+    incidentsInput:
+      required:
+        - incident_kind
+        - status
+        - incidentid
+        - starttime
+        - incident_category
+        - type
+        - restriction
+        - timezone
+      properties:
+        investigators:
+          type: array
+          items:
+            type: object
+            properties:
+              user:
+                $ref: '#/components/schemas/userInput/properties/user'
+              role:
+                type: string
+                enum:
+                  - Administrator
+                  - Fu
+                  - Multitenancy
+                  - Read Only (Not Editable)
+                  - RN
+                description: |+
+                  FR Role ID-Values map:
+
+                   22 <=> Administrator
+
+                  25 <=> Fu
+
+                  23 <=> Multitenancy
+
+                  24 <=> Read Only (Not Editable)
+
+                  26 <=> RN
+
+        folder:
+          type: string
+          enum:
+            - AC
+            - EB
+            - EI
+            - FM
+            - FU
+            - HT
+            - LZ
+            - MB
+            - MM
+            - SB
+            - SL
+            - SST
+          description: |2+
+             folder also accepting type (integer), Incident folder ID-Name map:
+
+             8 <=> AC
+
+            3 <=> EB
+
+            4 <=> EI
+
+            9 <=> FM
+
+            2 <=> FU
+
+            10 <=> HT
+
+            5 <=> LZ
+
+            11 <=> MB
+
+            7 <=> MM
+
+            6 <=> SB
+
+            12 <=> SL
+
+            1 <=> SST
+
+        observables_auto_lock:
+          type: array
+          items:
+            type: string
+            enum:
+              - file
+              - ipaddress
+              - url
+              - email
+              - userdetail
+              - domain
+          description: Auto locked observables
+        owner:
+          $ref: '#/components/schemas/userInput/properties/user'
+        incident_artifacts:
+          $ref: '#/components/schemas/artifactsInput/properties/incident_artifacts'
+        label:
+          $ref: '#/components/schemas/label/properties/label'
+        template_id:
+          $ref: '#/components/schemas/template/properties/template'
+        incident_kind:
+          type: string
+          enum:
+            - Forensic
+            - Forensic - Incident response
+            - Incident response
+          title: Kind
+          description: |2-
+             ID-Values map:
+
+             729 <=> Forensic
+
+            728 <=> Forensic - Incident response
+
+            727 <=> Incident response
+
+
+            default Value: Forensic - Incident response
+        status:
+          type: string
+          enum:
+            - Closed
+            - False positive
+            - Frozen
+            - Open
+          title: Status
+          description: |2-
+             ID-Values map:
+
+             632 <=> Closed
+
+            633 <=> False positive
+
+            631 <=> Frozen
+
+            634 <=> Open
+
+
+            default Value: Open
+        incidentid:
+          type: string
+          title: Incident ID / Forensic no.
+          description: <br>
+        starttime:
+          type: string
+          format: date-time
+          title: Start time
+          description: <br />
+        endtime:
+          type: string
+          format: date-time
+          title: End time
+          description: <br>
+        inhibit_phases:
+          oneOf:
+            - type: integer
+              enum:
+                - 0
+                - 1
+            - type: boolean
+          title: Inhibit phases management
+          description: <br>
+        incident_category:
+          type: string
+          enum:
+            - Civil
+            - Criminal
+            - Financial
+            - General
+            - Internal Affairs
+            - Legal
+            - Unknown
+          title: Category
+          description: |2-
+             ID-Values map:
+
+             13507 <=> Civil
+
+            13508 <=> Criminal
+
+            13509 <=> Financial
+
+            13510 <=> General
+
+            13511 <=> Internal Affairs
+
+            13512 <=> Legal
+
+            13513 <=> Unknown
+
+
+            default Value: General
+        type:
+          type: array
+          items:
+            type: string
+            enum:
+              - Denial of Service
+              - fu-testing
+              - Malware
+              - Phishing
+          title: Type
+          description: |2+
+             ID-Values map:
+
+             13514 <=> Denial of Service
+
+            13538 <=> fu-testing
+
+            13515 <=> Malware
+
+            13516 <=> Phishing
+
+        restriction:
+          type: string
+          enum:
+            - Epic!
+            - High
+            - Low
+            - Medium
+            - Unclassified
+          title: Restriction - Severity
+          description: |-
+            <br> ID-Values map:
+
+             13537 <=> Epic!
+
+            11865 <=> High
+
+            11864 <=> Low
+
+            11863 <=> Medium
+
+            11862 <=> Unclassified
+
+
+            default Value: Unclassified
+        description:
+          type: string
+          title: Short description
+          description: ''
+        tags:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          title: Tags
+          description: ''
+        timezone:
+          type: string
+          enum:
+            - Pacific/Kwajalein
+            - Pacific/Samoa
+            - Pacific/Honolulu
+            - America/Anchorage
+            - America/Los_Angeles
+            - America/Denver
+            - America/Chicago
+            - America/New_York
+            - America/Halifax
+            - America/St_Johns
+            - America/Sao_Paulo
+            - America/Montevideo
+            - Atlantic/South_Georgia
+            - Atlantic/Azores
+            - Atlantic/Cape_Verde
+            - Europe/London
+            - Europe/Paris
+            - Europe/Helsinki
+            - Europe/Moscow
+            - Asia/Tehran
+            - Asia/Dubai
+            - Asia/Kabul
+            - Asia/Karachi
+            - Asia/Kolkata
+            - Asia/Dacca
+            - Asia/Krasnoyarsk
+            - Asia/Manila
+            - Asia/Chongqing
+            - Asia/Singapore
+            - Asia/Tokyo
+            - Australia/Adelaide
+            - Australia/Melbourne
+            - Pacific/Noumea
+            - Pacific/Guadalcanal
+            - Pacific/Auckland
+            - Pacific/Fiji
+            - 'GMT -12.00 Enewetak Atoll, Kwajalein Atoll, Marshall Islands'
+            - 'GMT -11.00 Midway Atoll, Samoa Time Zone'
+            - 'GMT -10.00 Hawaii-Aleutian Standard Time, Cook Islands (NZ)'
+            - 'GMT -9.00 French Polynesia, Hawaii-Aleutian Daylight Time'
+            - 'GMT -8.00 Pacific Standard Time, Alaska Daylight Time'
+            - 'GMT -7.00 Mountain Standard Time, Pacific Daylight Time'
+            - 'GMT -6.00 Central Standard Time, East Pacific'
+            - GMT -6.00 Mountain Daylight Time
+            - 'GMT -5.00 Central daylight time, Eastern standard time'
+            - 'GMT -4.00 Eastern Caribbean Time Zone, Atlantic Standard Time'
+            - GMT -4.00 Eastern Daylight Time
+            - GMT -3.30 Newfoundland Standard Time
+            - 'GMT -3.00 Brazil, Atlantic Daylight Time'
+            - GMT -3.00 Uruguay
+            - GMT -2.00 South Georgia Time
+            - GMT -1.00 Azores
+            - GMT -1.00 Cape Verde
+            - 'GMT +0.00 Coordinated Universal Time, Greenwich Mean Time'
+            - 'GMT +1.00 Central European Time, West Africa Time'
+            - 'GMT +2.00 Central Africa Time, Eastern European Time'
+            - GMT +3.00 Eastern Europe Forward Time
+            - 'GMT +3.00 Arabia Standard Time, East Africa Time'
+            - GMT +3.30 Iran Standard Time
+            - 'GMT +4.00 Azerbaijan, European Russia, United Arab Emirates'
+            - GMT +4.30 Afghanistan
+            - 'GMT +5.00 Central Asia, Indian Ocean'
+            - GMT +5.30 Indian Standard Time
+            - 'GMT +6.00 Bangladesh Standard Time, Bhutan Time'
+            - GMT +7.00 Indochina Time
+            - GMT +8.00 Philippines Standard Time
+            - 'GMT +8.00 China Standard Time, Hong Kong Standard Time, Taiwan Standard Time'
+            - GMT +8.00 Singapore
+            - 'GMT +9.00 Japan Standard Time, Korea Standard Time'
+            - GMT +9.30 Australian Central Standard Time
+            - 'GMT +10.00 Eastern Standard Time, Chamorro Standard Time (US)'
+            - 'GMT +11.00 Federated States of Micronesia, New Caledonia'
+            - GMT +11.00 Solomon Islands
+            - GMT +12.00 New Zealand
+            - GMT +12.00 Fiji
+          default: 'GMT +1.00 Central European Time, West Africa Time'
+          title: Timezone
+          description: |
+
+            description: ID-Values map:
+
+            * 1 <=> GMT -12.00 Enewetak Atoll, Kwajalein Atoll, Marshall Islands <=> Pacific/Kwajalein
+            * 2 <=> GMT -11.00 Midway Atoll, Samoa Time Zone <=> Pacific/Samoa
+            * 3 <=> GMT -10.00 Hawaii-Aleutian Standard Time, Cook Islands (NZ) <=> Pacific/Honolulu
+            * 4 <=> GMT -9.00 French Polynesia, Hawaii-Aleutian Daylight Time <=> America/Anchorage
+            * 5 <=> GMT -8.00 Pacific Standard Time, Alaska Daylight Time <=> America/Los_Angeles
+            * 6 <=> GMT -7.00 Mountain Standard Time, Pacific Daylight Time <=> America/Denver
+            * 7 <=> GMT -6.00 Central Standard Time, East Pacific <=> America/Chicago
+            * 35 <=> GMT -6.00 Mountain Daylight Time <=> America/Denver
+            * 8 <=> GMT -5.00 Central daylight time, Eastern standard time <=> America/New_York
+            * 9 <=> GMT -4.00 Eastern Caribbean Time Zone, Atlantic Standard Time <=> America/Halifax
+            * 32 <=> GMT -4.00 Eastern Daylight Time <=> America/New_York
+            * 10 <=> GMT -3.30 Newfoundland Standard Time <=> America/St_Johns
+            * 11 <=> GMT -3.00 Brazil, Atlantic Daylight Time <=> America/Sao_Paulo
+            * 37 <=> GMT -3.00 Uruguay <=> America/Montevideo
+            * 12 <=> GMT -2.00 South Georgia Time <=> Atlantic/South_Georgia
+            * 36 <=> GMT -1.00 Azores <=> Atlantic/Azores
+            * 13 <=> GMT -1.00 Cape Verde <=> Atlantic/Cape_Verde
+            * 14 <=> GMT +0.00 Coordinated Universal Time, Greenwich Mean Time <=> Europe/London
+            * 15 <=> GMT +1.00 Central European Time, West Africa Time <=> Europe/Paris
+            * 16 <=> GMT +2.00 Central Africa Time, Eastern European Time <=> Europe/Helsinki
+            * 33 <=> GMT +3.00 Eastern Europe Forward Time <=> Europe/Helsinki
+            * 17 <=> GMT +3.00 Arabia Standard Time, East Africa Time <=> Europe/Moscow
+            * 18 <=> GMT +3.30 Iran Standard Time <=> Asia/Tehran
+            * 19 <=> GMT +4.00 Azerbaijan, European Russia, United Arab Emirates <=> Asia/Dubai
+            * 20 <=> GMT +4.30 Afghanistan <=> Asia/Kabul
+            * 21 <=> GMT +5.00 Central Asia, Indian Ocean <=> Asia/Karachi
+            * 22 <=> GMT +5.30 Indian Standard Time <=> Asia/Kolkata
+            * 23 <=> GMT +6.00 Bangladesh Standard Time, Bhutan Time <=> Asia/Dacca
+            * 24 <=> GMT +7.00 Indochina Time <=> Asia/Krasnoyarsk
+            * 31 <=> GMT +8.00 Philippines Standard Time <=> Asia/Manila
+            * 25 <=> GMT +8.00 China Standard Time, Hong Kong Standard Time, Taiwan Standard Time <=> Asia/Chongqing
+            * 38 <=> GMT +8.00 Singapore <=> Asia/Singapore
+            * 26 <=> GMT +9.00 Japan Standard Time, Korea Standard Time <=> Asia/Tokyo
+            * 27 <=> GMT +9.30 Australian Central Standard Time <=> Australia/Adelaide
+            * 28 <=> GMT +10.00 Eastern Standard Time, Chamorro Standard Time (US) <=> Australia/Melbourne
+            * 29 <=> GMT +11.00 Federated States of Micronesia, New Caledonia <=> Pacific/Noumea
+            * 34 <=> GMT +11.00 Solomon Islands <=> Pacific/Guadalcanal
+            * 30 <=> GMT +12.00 New Zealand <=> Pacific/Auckland
+            * 39 <=> GMT +12.00 Fiji <=> Pacific/Fiji
+      $ref: '#/components/schemas/incidentsInput'
+    attachmentsInput:
+      required:
+        - attachment
+        - file_name
+        - datetime
+        - application
+      properties:
+        attachment:
+          type: string
+          description: |-
+            Accepted formats:<br>
+                                - URI to the file<br>
+                                - File content in base64 encoded format
+        additional_info:
+          type: string
+        file_name:
+          type: string
+          description: ...
+          writeOnly: true
+        datetime:
+          type: string
+          format: date-time
+          title: Date
+          description: ''
+        folder:
+          type: string
+          title: Folder
+          description: ''
+        application:
+          type: string
+          title: Application
+          description: ''
+        description:
+          type: string
+          title: Short description
+          description: ''
+      $ref: '#/components/schemas/attachmentsInput'
+    notesInput:
+      required:
+        - title
+        - created_on
+      properties:
+        title:
+          type: string
+          title: Title
+          description: ''
+        tag:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          title: Tag
+          description: ''
+        created_on:
+          type: string
+          format: date-time
+          title: Date of creation
+          description: ''
+      $ref: '#/components/schemas/notesInput'
+    observablesInput:
+      required:
+        - type
+        - value
+      properties:
+        type:
+          type: string
+          enum:
+            - ipaddress
+            - url
+            - email
+            - userdetail
+            - domain
+          description: Observable type
+        value:
+          type: string
+          description: Observable value
+        additional_info:
+          type: string
+          description: Additional info
+      $ref: '#/components/schemas/observablesInput'
+    observablesListInput:
+      required:
+        - type
+        - value
+      properties:
+        value:
+          type: string
+          description: Observable value
+      $ref: '#/components/schemas/observablesListInput'
+    tasksInput:
+      required:
+        - title
+        - priority
+        - start_time
+        - end_time
+      properties:
+        send_reminder_on_reminder_time:
+          type: boolean
+          description: Send a reminder to the assigned user on the Reminder date
+        send_reminder_on_end_time:
+          type: boolean
+          description: Send a reminder to the assigned user on the End date
+        send_reminder_on_report_time:
+          type: boolean
+          description: Send a reminder to the assigned user on the Report date
+        title:
+          type: string
+          title: Title
+          description: ''
+        assigned_to:
+          $ref: '#/components/schemas/user/properties/user'
+        hours:
+          type: string
+          title: Actual effort
+          description: ''
+        percentage:
+          type: string
+          enum:
+            - '0'
+            - '10'
+            - '20'
+            - '30'
+            - '40'
+            - '50'
+            - '60'
+            - '70'
+            - '80'
+            - '90'
+            - '100'
+          title: Progress
+          description: |2-
+             ID-Values map:
+
+             1121 <=> 0
+
+            1122 <=> 10
+
+            1124 <=> 20
+
+            1125 <=> 30
+
+            1126 <=> 40
+
+            1127 <=> 50
+
+            1128 <=> 60
+
+            1129 <=> 70
+
+            1130 <=> 80
+
+            1131 <=> 90
+
+            1123 <=> 100
+
+
+            default Value: 0
+        priority:
+          type: string
+          enum:
+            - Important
+            - Low
+            - Normal
+            - Urgent
+          title: Priority
+          description: |2-
+             ID-Values map:
+
+             11808 <=> Important
+
+            11806 <=> Low
+
+            11807 <=> Normal
+
+            11809 <=> Urgent
+
+
+            default Value: Normal
+        start_time:
+          type: string
+          format: date-time
+          default: now
+          title: Start time
+          description: ''
+        end_time:
+          type: string
+          format: date-time
+          title: End time
+          description: ''
+        report_time:
+          type: string
+          format: date-time
+          title: Report time
+          description: ''
+        reminder_time:
+          type: string
+          format: date-time
+          title: Reminder time
+          description: ''
+      $ref: '#/components/schemas/tasksInput'
+    timelineInput:
+      required:
+        - title
+        - starttime
+        - category
+        - timezone
+      properties:
+        title:
+          type: string
+          title: Title
+          description: ''
+        starttime:
+          type: string
+          format: date-time
+          title: Start date
+          description: ''
+        endtime:
+          type: string
+          format: date-time
+          title: End date
+          description: ''
+        category:
+          type: string
+          enum:
+            - Acquisition
+            - Artifact
+            - Automatic
+            - Hash verification
+            - None
+            - Process phase
+            - Task
+            - Triage
+          title: Category
+          description: |2+
+             ID-Values map:
+
+             11932 <=> Acquisition
+
+            11933 <=> Artifact
+
+            11934 <=> Automatic
+
+            11935 <=> Hash verification
+
+            11936 <=> None
+
+            11937 <=> Process phase
+
+            13531 <=> Task
+
+            13532 <=> Triage
+
+        timezone:
+          type: string
+          enum:
+            - Pacific/Kwajalein
+            - Pacific/Samoa
+            - Pacific/Honolulu
+            - America/Anchorage
+            - America/Los_Angeles
+            - America/Denver
+            - America/Chicago
+            - America/New_York
+            - America/Halifax
+            - America/St_Johns
+            - America/Sao_Paulo
+            - America/Montevideo
+            - Atlantic/South_Georgia
+            - Atlantic/Azores
+            - Atlantic/Cape_Verde
+            - Europe/London
+            - Europe/Paris
+            - Europe/Helsinki
+            - Europe/Moscow
+            - Asia/Tehran
+            - Asia/Dubai
+            - Asia/Kabul
+            - Asia/Karachi
+            - Asia/Kolkata
+            - Asia/Dacca
+            - Asia/Krasnoyarsk
+            - Asia/Manila
+            - Asia/Chongqing
+            - Asia/Singapore
+            - Asia/Tokyo
+            - Australia/Adelaide
+            - Australia/Melbourne
+            - Pacific/Noumea
+            - Pacific/Guadalcanal
+            - Pacific/Auckland
+            - Pacific/Fiji
+            - 'GMT -12.00 Enewetak Atoll, Kwajalein Atoll, Marshall Islands'
+            - 'GMT -11.00 Midway Atoll, Samoa Time Zone'
+            - 'GMT -10.00 Hawaii-Aleutian Standard Time, Cook Islands (NZ)'
+            - 'GMT -9.00 French Polynesia, Hawaii-Aleutian Daylight Time'
+            - 'GMT -8.00 Pacific Standard Time, Alaska Daylight Time'
+            - 'GMT -7.00 Mountain Standard Time, Pacific Daylight Time'
+            - 'GMT -6.00 Central Standard Time, East Pacific'
+            - GMT -6.00 Mountain Daylight Time
+            - 'GMT -5.00 Central daylight time, Eastern standard time'
+            - 'GMT -4.00 Eastern Caribbean Time Zone, Atlantic Standard Time'
+            - GMT -4.00 Eastern Daylight Time
+            - GMT -3.30 Newfoundland Standard Time
+            - 'GMT -3.00 Brazil, Atlantic Daylight Time'
+            - GMT -3.00 Uruguay
+            - GMT -2.00 South Georgia Time
+            - GMT -1.00 Azores
+            - GMT -1.00 Cape Verde
+            - 'GMT +0.00 Coordinated Universal Time, Greenwich Mean Time'
+            - 'GMT +1.00 Central European Time, West Africa Time'
+            - 'GMT +2.00 Central Africa Time, Eastern European Time'
+            - GMT +3.00 Eastern Europe Forward Time
+            - 'GMT +3.00 Arabia Standard Time, East Africa Time'
+            - GMT +3.30 Iran Standard Time
+            - 'GMT +4.00 Azerbaijan, European Russia, United Arab Emirates'
+            - GMT +4.30 Afghanistan
+            - 'GMT +5.00 Central Asia, Indian Ocean'
+            - GMT +5.30 Indian Standard Time
+            - 'GMT +6.00 Bangladesh Standard Time, Bhutan Time'
+            - GMT +7.00 Indochina Time
+            - GMT +8.00 Philippines Standard Time
+            - 'GMT +8.00 China Standard Time, Hong Kong Standard Time, Taiwan Standard Time'
+            - GMT +8.00 Singapore
+            - 'GMT +9.00 Japan Standard Time, Korea Standard Time'
+            - GMT +9.30 Australian Central Standard Time
+            - 'GMT +10.00 Eastern Standard Time, Chamorro Standard Time (US)'
+            - 'GMT +11.00 Federated States of Micronesia, New Caledonia'
+            - GMT +11.00 Solomon Islands
+            - GMT +12.00 New Zealand
+            - GMT +12.00 Fiji
+          title: Timezone
+          description: |
+
+            description: ID-Values map:
+
+            * 1 <=> GMT -12.00 Enewetak Atoll, Kwajalein Atoll, Marshall Islands <=> Pacific/Kwajalein
+            * 2 <=> GMT -11.00 Midway Atoll, Samoa Time Zone <=> Pacific/Samoa
+            * 3 <=> GMT -10.00 Hawaii-Aleutian Standard Time, Cook Islands (NZ) <=> Pacific/Honolulu
+            * 4 <=> GMT -9.00 French Polynesia, Hawaii-Aleutian Daylight Time <=> America/Anchorage
+            * 5 <=> GMT -8.00 Pacific Standard Time, Alaska Daylight Time <=> America/Los_Angeles
+            * 6 <=> GMT -7.00 Mountain Standard Time, Pacific Daylight Time <=> America/Denver
+            * 7 <=> GMT -6.00 Central Standard Time, East Pacific <=> America/Chicago
+            * 35 <=> GMT -6.00 Mountain Daylight Time <=> America/Denver
+            * 8 <=> GMT -5.00 Central daylight time, Eastern standard time <=> America/New_York
+            * 9 <=> GMT -4.00 Eastern Caribbean Time Zone, Atlantic Standard Time <=> America/Halifax
+            * 32 <=> GMT -4.00 Eastern Daylight Time <=> America/New_York
+            * 10 <=> GMT -3.30 Newfoundland Standard Time <=> America/St_Johns
+            * 11 <=> GMT -3.00 Brazil, Atlantic Daylight Time <=> America/Sao_Paulo
+            * 37 <=> GMT -3.00 Uruguay <=> America/Montevideo
+            * 12 <=> GMT -2.00 South Georgia Time <=> Atlantic/South_Georgia
+            * 36 <=> GMT -1.00 Azores <=> Atlantic/Azores
+            * 13 <=> GMT -1.00 Cape Verde <=> Atlantic/Cape_Verde
+            * 14 <=> GMT +0.00 Coordinated Universal Time, Greenwich Mean Time <=> Europe/London
+            * 15 <=> GMT +1.00 Central European Time, West Africa Time <=> Europe/Paris
+            * 16 <=> GMT +2.00 Central Africa Time, Eastern European Time <=> Europe/Helsinki
+            * 33 <=> GMT +3.00 Eastern Europe Forward Time <=> Europe/Helsinki
+            * 17 <=> GMT +3.00 Arabia Standard Time, East Africa Time <=> Europe/Moscow
+            * 18 <=> GMT +3.30 Iran Standard Time <=> Asia/Tehran
+            * 19 <=> GMT +4.00 Azerbaijan, European Russia, United Arab Emirates <=> Asia/Dubai
+            * 20 <=> GMT +4.30 Afghanistan <=> Asia/Kabul
+            * 21 <=> GMT +5.00 Central Asia, Indian Ocean <=> Asia/Karachi
+            * 22 <=> GMT +5.30 Indian Standard Time <=> Asia/Kolkata
+            * 23 <=> GMT +6.00 Bangladesh Standard Time, Bhutan Time <=> Asia/Dacca
+            * 24 <=> GMT +7.00 Indochina Time <=> Asia/Krasnoyarsk
+            * 31 <=> GMT +8.00 Philippines Standard Time <=> Asia/Manila
+            * 25 <=> GMT +8.00 China Standard Time, Hong Kong Standard Time, Taiwan Standard Time <=> Asia/Chongqing
+            * 38 <=> GMT +8.00 Singapore <=> Asia/Singapore
+            * 26 <=> GMT +9.00 Japan Standard Time, Korea Standard Time <=> Asia/Tokyo
+            * 27 <=> GMT +9.30 Australian Central Standard Time <=> Australia/Adelaide
+            * 28 <=> GMT +10.00 Eastern Standard Time, Chamorro Standard Time (US) <=> Australia/Melbourne
+            * 29 <=> GMT +11.00 Federated States of Micronesia, New Caledonia <=> Pacific/Noumea
+            * 34 <=> GMT +11.00 Solomon Islands <=> Pacific/Guadalcanal
+            * 30 <=> GMT +12.00 New Zealand <=> Pacific/Auckland
+            * 39 <=> GMT +12.00 Fiji <=> Pacific/Fiji
+      $ref: '#/components/schemas/timelineInput'
+    artifactsInput:
+      properties:
+        incident_artifacts:
+          type: array
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                act:
+                  type: string
+                app:
+                  type: string
+                c6a1:
+                  type: string
+                c6a1Label:
+                  type: string
+                c6a2:
+                  type: string
+                c6a2Label:
+                  type: string
+                c6a3:
+                  type: string
+                c6a3Label:
+                  type: string
+                c6a4:
+                  type: string
+                c6a4Label:
+                  type: string
+                cat:
+                  type: string
+                cfp1:
+                  type: string
+                cfp1Label:
+                  type: string
+                cfp2:
+                  type: string
+                cfp2Label:
+                  type: string
+                cfp3:
+                  type: string
+                cfp3Label:
+                  type: string
+                cfp4:
+                  type: string
+                cfp4Label:
+                  type: string
+                cn1:
+                  type: string
+                cn1Label:
+                  type: string
+                cn2:
+                  type: string
+                cn2Label:
+                  type: string
+                cn3:
+                  type: string
+                cn3Label:
+                  type: string
+                cnt:
+                  type: string
+                cs1:
+                  type: string
+                cs1Label:
+                  type: string
+                cs2:
+                  type: string
+                cs2Label:
+                  type: string
+                cs3:
+                  type: string
+                cs3Label:
+                  type: string
+                cs4:
+                  type: string
+                cs4Label:
+                  type: string
+                cs5:
+                  type: string
+                cs5Label:
+                  type: string
+                cs6:
+                  type: string
+                cs6Label:
+                  type: string
+                destinationDnsDomain:
+                  type: string
+                destinationServiceName:
+                  type: string
+                destinationTranslatedAddress:
+                  type: string
+                destinationTranslatedPort:
+                  type: string
+                deviceCustomDate1:
+                  type: string
+                deviceCustomDate1Label:
+                  type: string
+                deviceCustomDate2:
+                  type: string
+                deviceCustomDate2Label:
+                  type: string
+                deviceDirection:
+                  type: string
+                deviceDnsDomain:
+                  type: string
+                deviceExternalId:
+                  type: string
+                deviceFacility:
+                  type: string
+                deviceInboundInterface:
+                  type: string
+                deviceMacAddress:
+                  type: string
+                deviceNtDomain:
+                  type: string
+                deviceOutboundInterface:
+                  type: string
+                deviceProcessName:
+                  type: string
+                deviceTranslatedAddress:
+                  type: string
+                dhost:
+                  type: string
+                dmac:
+                  type: string
+                dntdom:
+                  type: string
+                dpid:
+                  type: string
+                dpriv:
+                  type: string
+                dproc:
+                  type: string
+                dpt:
+                  type: string
+                dst:
+                  type: string
+                duid:
+                  type: string
+                duser:
+                  type: string
+                dvc:
+                  type: string
+                dvchost:
+                  type: string
+                dvcpid:
+                  type: string
+                end:
+                  type: string
+                externalId:
+                  type: string
+                fileCreateTime:
+                  type: string
+                fileHash:
+                  type: string
+                fileId:
+                  type: string
+                fileModificationTime:
+                  type: string
+                filePath:
+                  type: string
+                filePermission:
+                  type: string
+                fileType:
+                  type: string
+                fname:
+                  type: string
+                fsize:
+                  type: string
+                in:
+                  type: string
+                msg:
+                  type: string
+                oldFileCreateTime:
+                  type: string
+                oldFileHash:
+                  type: string
+                oldFileId:
+                  type: string
+                oldFileModificationTime:
+                  type: string
+                oldFileName:
+                  type: string
+                oldFilePath:
+                  type: string
+                oldFilePermission:
+                  type: string
+                oldFileSize:
+                  type: string
+                oldFileType:
+                  type: string
+                out:
+                  type: string
+                outcome:
+                  type: string
+                proto:
+                  type: string
+                request:
+                  type: string
+                requestClientApplication:
+                  type: string
+                requestCookies:
+                  type: string
+                requestMethod:
+                  type: string
+                rt:
+                  type: string
+                shost:
+                  type: string
+                smac:
+                  type: string
+                sntdom:
+                  type: string
+                sourceDnsDomain:
+                  type: string
+                sourceServiceName:
+                  type: string
+                sourceTranslatedAddress:
+                  type: string
+                sourceTranslatedPort:
+                  type: string
+                spid:
+                  type: string
+                spriv:
+                  type: string
+                sproc:
+                  type: string
+                spt:
+                  type: string
+                src:
+                  type: string
+                start:
+                  type: string
+                suid:
+                  type: string
+                suser:
+                  type: string
+          description: 'Incident artifacts, choose any from the given artifacts'
+    eventsInput:
+      properties:
+        status:
+          type: string
+          enum:
+            - Converted to incident
+            - Discarded
+            - Grabbed
+            - Pending
+          title: Status
+          description: |2+
+             ID-Values map:
+
+             13536 <=> Converted to incident
+
+            13534 <=> Discarded
+
+            13535 <=> Grabbed
+
+            13533 <=> Pending
+
+          readOnly: true
+        type:
+          $ref: '#/components/schemas/incidentsInput/properties/type'
+      $ref: '#/components/schemas/eventsInput'
+    attachmentsForm:
+      required:
+        - attachment
+        - file_name
+        - datetime
+        - application
+      properties:
+        attachment:
+          type: string
+          description: Direct File upload (octet-stream)
+          format: binary
+        additional_info:
+          type: string
+        file_name:
+          type: string
+          description: ...
+          writeOnly: true
+        datetime:
+          type: string
+          format: date-time
+          title: Date
+          description: ''
+        folder:
+          type: string
+          title: Folder
+          description: ''
+        application:
+          type: string
+          title: Application
+          description: ''
+        description:
+          type: string
+          title: Short description
+          description: ''
+      $ref: '#/components/schemas/attachmentsForm'
+    incidentId:
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: incident id
+        name:
+          type: string
+          description: incident name
+    kpiInput:
+      properties:
+        output_set:
+          type: string
+          enum:
+            - ei
+        type:
+          type: string
+          enum:
+            - json
+            - csv
+      $ref: '#/components/schemas/kpiInput'
+    template:
+      properties:
+        template:
+          type: string
+          enum:
+            - eb
+            - ei
+          description: |+
+            Template ID-Name map:
+
+             2 <=> eb
+
+            1 <=> ei
+
+    label:
+      properties:
+        label:
+          type: string
+          enum:
+            - eb
+          description: |+
+            Label ID-Name map:
+
+             1 <=> eb
+
+      $ref: '#/components/schemas/label'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    basicAuth:
+      type: http
+      scheme: basic
+security:
+  - bearerAuth: []
+tags:
+  - name: Attachments
+    description: Work with Attachments
+  - name: Incidents
+    description: Work with IncMan Incidents
+  - name: KPI
+    description: Generate KPI Reports
+  - name: Notes
+    description: Work with Incident Notes
+  - name: Observables
+    description: Work with Observables
+  - name: Search
+    description: Search IncMan and Incidents
+  - name: Tasks
+    description: Work with Tasks
+  - name: Timeline
+    description: Work with the Incident Timeline
+  - name: Authorization
+    description: Generate JWT token
+  - name: Triage
+    description: Work with START Triage
+  - name: Triage
+    description: Work with START Triage
